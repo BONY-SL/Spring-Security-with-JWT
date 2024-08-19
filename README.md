@@ -3,13 +3,21 @@
 <h2>Features</h2>
 
 <ol>
-  <li>User registration and login with JWT authentication
-</li>
-  <li>Password encryption using BCrypt
-</li>
-  <li>Role-based authorization with Spring Security
-</li>
-
+  <li>
+    User registration and login with JWT authentication
+  </li>
+  <li>
+    Password encryption using BCrypt
+  </li>
+  <li>
+    Role-based authorization with Spring Security
+  </li>
+    <li>
+    Refresh Token
+  </li>
+    <li>
+    LogOut
+  </li>
 </ol>
 
 <h2>Technologies
