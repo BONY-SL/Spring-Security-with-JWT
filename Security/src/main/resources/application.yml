@@ -18,7 +18,7 @@ spring:
 application:
   security:
     jwt:
-      secret-key: secret-key
+      secret-key: secret-key # https://generate-random.org/encryption-key-generator
       expiration: 60000 #one min
       refresh-token:
         expiration: 3600000 #one h
