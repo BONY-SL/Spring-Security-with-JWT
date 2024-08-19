@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -57,8 +56,13 @@ public class AuthenticationService {
                 .build();
         var savedUser = userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
+
         var refreshToken = jwtService.generateRefreshToken(user);
+
         saveUserToken(savedUser, jwtToken);
+
+
+
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
@@ -78,9 +82,12 @@ public class AuthenticationService {
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
+
         var refreshToken = jwtService.generateRefreshToken(user);
+
         revokeAllUserTokens(user);
         saveUserToken(user, jwtToken);
+
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
@@ -89,15 +96,30 @@ public class AuthenticationService {
 
 
     private void saveUserToken(User user, String jwtToken) {
-        var token = Token.builder()
-                .user(user)
-                .token(jwtToken)
-                .tokenType(TokenType.BEARER)
-                .expired(false)
-                .revoked(false)
-                .build();
+
+
+        Optional<Token> existingToken = tokenRepository.findByToken(jwtToken);
+
+        Token token;
+        if (existingToken.isPresent()) {
+
+            token = existingToken.get();
+            token.setUser(user);
+            token.setExpired(false);
+            token.setRevoked(false);
+        } else {
+
+            token = Token.builder()
+                    .user(user)
+                    .token(jwtToken)
+                    .tokenType(TokenType.BEARER)
+                    .expired(false)
+                    .revoked(false)
+                    .build();
+        }
         tokenRepository.save(token);
     }
+
 
     private void revokeAllUserTokens(User user) {
         var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
@@ -118,7 +140,7 @@ public class AuthenticationService {
 
         final String userEmail;
 
-        if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return;
         }
         refreshToken = authHeader.substring(7);
@@ -136,7 +158,6 @@ public class AuthenticationService {
                         .build();
                 new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }
-
         }
     }
 }
